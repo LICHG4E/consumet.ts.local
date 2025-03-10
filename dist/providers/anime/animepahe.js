@@ -55,7 +55,16 @@ class AnimePahe extends models_1.AnimeParser {
                     .map((i, el) => $(el).find('a').attr('title'))
                     .get();
                 animeInfo.hasSub = true;
-                switch ($('div.anime-info p:icontains("Status:") a').text().trim()) {
+                // Fix for :icontains which is not standard in Cheerio
+                // Replace with standard selector
+                const statusText = $('div.anime-info p')
+                    .filter(function () {
+                    return $(this).text().includes('Status:');
+                })
+                    .find('a')
+                    .text()
+                    .trim();
+                switch (statusText) {
                     case 'Currently Airing':
                         animeInfo.status = models_1.MediaStatus.ONGOING;
                         break;
@@ -107,9 +116,12 @@ class AnimePahe extends models_1.AnimeParser {
                 });
                 animeInfo.episodes = [];
                 if (episodePage < 0) {
+                    // VERCEL ISSUE POINT 1: This API request might be blocked by AnimeParhe
+                    console.log(`[Vercel Debug] Fetching episodes for ${id}, page 1`);
                     const { data: { last_page, data }, } = await this.client.get(`${this.baseUrl}/api?m=release&id=${id}&sort=episode_asc&page=1`, {
                         headers: this.Headers(id),
                     });
+                    console.log(`[Vercel Debug] Successfully fetched page 1, total pages: ${last_page}`);
                     animeInfo.episodePages = last_page;
                     animeInfo.episodes.push(...data.map((item) => ({
                         id: `${id}/${item.session}`,
@@ -120,15 +132,19 @@ class AnimePahe extends models_1.AnimeParser {
                         url: `${this.baseUrl}/play/${id}/${item.session}`,
                     })));
                     for (let i = 1; i < last_page; i++) {
+                        // VERCEL ISSUE POINT 2: Multiple requests might trigger rate limiting
+                        console.log(`[Vercel Debug] Fetching episodes page ${i + 1}/${last_page}`);
                         animeInfo.episodes.push(...(await this.fetchEpisodes(id, i + 1)));
                     }
                 }
                 else {
+                    console.log(`[Vercel Debug] Fetching specific episode page: ${episodePage}`);
                     animeInfo.episodes.push(...(await this.fetchEpisodes(id, episodePage)));
                 }
                 return animeInfo;
             }
             catch (err) {
+                console.error(`[Vercel Debug] Error in fetchAnimeInfo: ${err.message}`);
                 throw new Error(err.message);
             }
         };
@@ -138,47 +154,67 @@ class AnimePahe extends models_1.AnimeParser {
          */
         this.fetchEpisodeSources = async (episodeId) => {
             try {
+                // VERCEL ISSUE POINT 3: The main error occurs here - likely a 403 forbidden response
+                console.log(`[Vercel Debug] Fetching episode sources for ${episodeId}`);
                 const { data } = await this.client.get(`${this.baseUrl}/play/${episodeId}`, {
                     headers: this.Headers(episodeId.split('/')[0]),
                 });
+                console.log(`[Vercel Debug] Successfully got play page data`);
                 const $ = (0, cheerio_1.load)(data);
                 const links = $('div#resolutionMenu > button').map((i, el) => ({
                     url: $(el).attr('data-src'),
                     quality: $(el).text(),
                     audio: $(el).attr('data-audio'),
                 }));
+                console.log(`[Vercel Debug] Found ${links.length} quality options`);
                 const iSource = {
                     headers: {
                         Referer: 'https://kwik.cx/',
                     },
                     sources: [],
                 };
+                // VERCEL ISSUE POINT 4: The Kwik extractor might be failing due to eval() or external requests
                 for (const link of links) {
-                    const res = await new extractors_1.Kwik(this.proxyConfig).extract(new URL(link.url));
-                    res[0].quality = link.quality;
-                    res[0].isDub = link.audio === 'eng';
-                    iSource.sources.push(res[0]);
+                    console.log(`[Vercel Debug] Processing stream: ${link.quality}, URL: ${link.url.substring(0, 30)}...`);
+                    try {
+                        const res = await new extractors_1.Kwik(this.proxyConfig).extract(new URL(link.url));
+                        console.log(`[Vercel Debug] Successfully extracted stream for ${link.quality}`);
+                        res[0].quality = link.quality;
+                        res[0].isDub = link.audio === 'eng';
+                        iSource.sources.push(res[0]);
+                    }
+                    catch (error) {
+                        console.error(`[Vercel Debug] Failed extracting ${link.quality}: ${error.message}`);
+                    }
                 }
                 return iSource;
             }
             catch (err) {
-                console.log('im here and i got a problem fetching episode sources');
+                console.error(`[Vercel Debug] Error in fetchEpisodeSources: ${err.message}`);
                 throw new Error(err.message);
             }
         };
         this.fetchEpisodes = async (session, page) => {
-            const res = await this.client.get(`${this.baseUrl}/api?m=release&id=${session}&sort=episode_asc&page=${page}`, { headers: this.Headers(session) });
-            const epData = res.data.data;
-            return [
-                ...epData.map((item) => ({
-                    id: `${session}/${item.session}`,
-                    number: item.episode,
-                    title: item.title,
-                    image: item.snapshot,
-                    duration: item.duration,
-                    url: `${this.baseUrl}/play/${session}/${item.session}`,
-                })),
-            ];
+            try {
+                console.log(`[Vercel Debug] Fetching episodes for ${session}, page ${page}`);
+                const res = await this.client.get(`${this.baseUrl}/api?m=release&id=${session}&sort=episode_asc&page=${page}`, { headers: this.Headers(session) });
+                console.log(`[Vercel Debug] Successfully fetched episodes page ${page}`);
+                const epData = res.data.data;
+                return [
+                    ...epData.map((item) => ({
+                        id: `${session}/${item.session}`,
+                        number: item.episode,
+                        title: item.title,
+                        image: item.snapshot,
+                        duration: item.duration,
+                        url: `${this.baseUrl}/play/${session}/${item.session}`,
+                    })),
+                ];
+            }
+            catch (error) {
+                console.error(`[Vercel Debug] Error fetching episodes page ${page}: ${error.message}`);
+                return [];
+            }
         };
         /**
          * @deprecated
@@ -221,12 +257,4 @@ class AnimePahe extends models_1.AnimeParser {
     }
 }
 exports.default = AnimePahe;
-// (async () => {
-//   const animepahe = new AnimePahe();
-//   const anime = await animepahe.search('Classroom of the elite');
-//   const info = await animepahe.fetchAnimeInfo(anime.results[0].id);
-//   // console.log(info);
-//  const sources = await animepahe.fetchEpisodeSources(info.episodes![0].id);
-//   console.log(sources);
-// })();
 //# sourceMappingURL=animepahe.js.map
