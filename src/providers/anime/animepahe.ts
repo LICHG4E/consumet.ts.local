@@ -230,25 +230,37 @@ class AnimePahe extends AnimeParser {
   };
 
   private Headers(sessionId: string | false) {
+    // Generate a random user agent from a pool
+    const userAgents = [
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+      'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:123.0) Gecko/20100101 Firefox/123.0',
+    ];
+
+    // Randomize some values to avoid detection
+    const randomAgent = userAgents[Math.floor(Math.random() * userAgents.length)];
+    const randomCookie = `__ddg2_=${Math.random().toString(36).substring(2)}; sessionId=${Math.random()
+      .toString(36)
+      .substring(2)}`;
+
     return {
       authority: 'animepahe.ru',
-      accept: 'application/json, text/javascript, */*; q=0.01',
+      accept:
+        'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
       'accept-language': 'en-US,en;q=0.9',
-      cookie: `__ddg2_=abc${Math.random().toString(36).substring(2)}; sessionId=${Math.random()
-        .toString(36)
-        .substring(2)}`,
-      'cache-control': 'max-age=0',
+      cookie: randomCookie,
+      'cache-control': 'no-cache',
+      pragma: 'no-cache',
       'sec-ch-ua': '"Chromium";v="122", "Google Chrome";v="122", "Not;A=Brand";v="99"',
       'sec-ch-ua-mobile': '?0',
       'sec-ch-ua-platform': '"Windows"',
       'sec-fetch-dest': 'document',
       'sec-fetch-mode': 'navigate',
-      'sec-fetch-site': 'none',
+      'sec-fetch-site': sessionId ? 'same-origin' : 'none',
       'sec-fetch-user': '?1',
       'upgrade-insecure-requests': '1',
-      'x-requested-with': 'XMLHttpRequest',
-      referer: sessionId ? `${this.baseUrl}/anime/${sessionId}` : `${this.baseUrl}`,
-      'user-agent': USER_AGENT,
+      'user-agent': randomAgent,
+      referer: sessionId ? `https://animepahe.ru/anime/${sessionId}` : 'https://animepahe.ru/',
     };
   }
 }
@@ -261,6 +273,6 @@ export default AnimePahe;
 //   const anime = await animepahe.search('Classroom of the elite');
 //   const info = await animepahe.fetchAnimeInfo(anime.results[0].id);
 //   // console.log(info);
-//   const sources = await animepahe.fetchEpisodeSources(info.episodes![0].id);
+//  const sources = await animepahe.fetchEpisodeSources(info.episodes![0].id);
 //   console.log(sources);
 // })();
