@@ -3,8 +3,6 @@ declare class Kwik extends VideoExtractor {
     protected serverName: string;
     protected sources: IVideo[];
     private readonly host;
-    private readonly proxyUrl;
-    extract: (videoUrl: URL, retryCount?: number) => Promise<IVideo[]>;
-    private getHeaders;
+    extract: (videoUrl: URL) => Promise<IVideo[]>;
 }
 export default Kwik;
