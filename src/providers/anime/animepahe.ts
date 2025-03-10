@@ -195,6 +195,7 @@ class AnimePahe extends AnimeParser {
 
       return iSource;
     } catch (err) {
+      console.log('im here and i got a problem fetching episode sources');
       throw new Error((err as Error).message);
     }
   };

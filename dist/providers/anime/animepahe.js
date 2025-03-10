@@ -162,6 +162,7 @@ class AnimePahe extends models_1.AnimeParser {
                 return iSource;
             }
             catch (err) {
+                console.log('im here and i got a problem fetching episode sources');
                 throw new Error(err.message);
             }
         };
