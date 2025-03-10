@@ -7,7 +7,7 @@ class AnimePahe extends models_1.AnimeParser {
     constructor() {
         super(...arguments);
         this.name = 'AnimePahe';
-        this.baseUrl = 'https://cors.consumet.stream/animepahe.ru';
+        this.baseUrl = 'https://animepahe.ru';
         this.logo = 'https://animepahe.com/pikacon.ico';
         this.classPath = 'ANIME.AnimePahe';
         // private readonly sgProxy = 'https://cors.consumet.stream';
