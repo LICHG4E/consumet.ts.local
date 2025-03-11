@@ -210,9 +210,7 @@ class AnimePahe extends AnimeParser {
 
       // VERCEL ISSUE POINT 4: The Kwik extractor might be failing due to eval() or external requests
       for (const link of links) {
-        console.log(
-          `[Vercel Debug] Processing stream: ${link.quality}, URL: ${link.url.substring(0, 30)}...`
-        );
+        console.log(`[Vercel Debug] Processing stream: ${link.quality}, URL: ${link.url}`);
         try {
           const res = await new Kwik(this.proxyConfig).extract(new URL(link.url));
           console.log(`[Vercel Debug] Successfully extracted stream for ${link.quality}`);
