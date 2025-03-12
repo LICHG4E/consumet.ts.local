@@ -225,6 +225,8 @@ class AnimePahe extends models_1.AnimeParser {
         };
     }
     Headers(sessionId) {
+        // Using a more comprehensive cookie like the one in pahe.ts
+        const cookie = '__ddgid_=OTcqdThY3SqrpMKJ; __ddg2_=hYARCDSHUTVXcLWW; __ddg1_=axxddcKnDXN08jslc2Lo; __ddg9_=1.187.213.32; SERVERID=janna; XSRF-TOKEN=eyJpdiI6IjM4V2pYVVhyblQrN2JyVGRheWdyaFE9PSIsInZhbHVlIjoiT1FIUWNCc0FYbHlRZklGN1hNT0hEYi93NkhSVk5kczRadG5uREMyZUpMMVpzbVd2ZjBOTDNCL2FaaGdYMWdrZ1BUU3pXbm83ODFIWTNXdEdZZnQ2ZHQ0OEhyWldud2R6UHBvZHVOTDRZRmRRQ3ZScGdQdnhURkoyZmJQbURvVE8iLCJtYWMiOiJkMzc1YzZmZjA2ZjlkNzE2ZDk3YzViMDNjZDU3MWM3NDg3MjJiZjExMDk5Y2NhMTk2ODI5YzFmY2I3MGY2ZDg5IiwidGFnIjoiIn0%3D; laravel_session=eyJpdiI6IkJsekRaWXI3dzNFT0dHeDFnRnNKK0E9PSIsInZhbHVlIjoiYWpLK2w4ZGcxQnBoWFBHMmpFNW0wYUNUZ2dUTzBHRU1XT3ZMNk4wSGFpcHpvSkJxVjZJZ0pMSWU4TDVFR21janJnQ1Rxb1Z3RHdtVnU5Q2o1KzJWdldwQ3RsalQrdjVlQy9ReXZaYkxIS2l2YkdMM212VXhSSDd5TDFlZG52YmQiLCJtYWMiOiI4YjExYmM3MDEyOThjOTljYmY1ODZlNDkxNjA3NTlkM2E1MjE2NjViNWY3NDI3ZDJmYjJkNWFiYzRiZTE3MGU3IiwidGFnIjoiIn0%3D; aud=jpn; av1=0; res=480';
         // Generate a random user agent from a pool
         const userAgents = [
             'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
@@ -240,7 +242,7 @@ class AnimePahe extends models_1.AnimeParser {
             authority: 'animepahe.ru',
             accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
             'accept-language': 'en-US,en;q=0.9',
-            cookie: randomCookie,
+            cookie: cookie,
             'cache-control': 'no-cache',
             pragma: 'no-cache',
             'sec-ch-ua': '"Chromium";v="122", "Google Chrome";v="122", "Not;A=Brand";v="99"',
